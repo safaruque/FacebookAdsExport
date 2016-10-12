@@ -155,9 +155,14 @@ class FacebookAdsExporter
         return $this->getAdInsights($adList, $date);
     }
 
+    /**
+     * Exports data to .csv file
+     *
+     * @param $data
+     * @param $pathToExport Absolute path including filename
+     */
     public function export($data, $pathToExport){
-        $cwd = __dir__;
-        $fp = fopen($cwd . $pathToExport, 'w');
+        $fp = fopen($pathToExport, 'w');
 
         foreach ($data as $fields) {
             fputcsv($fp, $fields);
