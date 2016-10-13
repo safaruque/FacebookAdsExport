@@ -6,6 +6,7 @@ use Facebook\Facebook;
 use Facebook\FacebookApp;
 use Facebook\FacebookRequest;
 use Dotenv;
+use FacebookAds\Exception\Exception;
 
 class FacebookAdsExporter
 {
@@ -14,6 +15,7 @@ class FacebookAdsExporter
     protected $appSecret;
     protected $appAccessToken;
     protected $accountId;
+    const MAX_ATTEMPTS = 5;
 
     public function __construct()
     {
@@ -74,8 +76,8 @@ class FacebookAdsExporter
         $adList = array();
 
         $params = array(
-            'fields' => 'adset_id, effective_status, status, impression',
-            'limit' => 500,
+            'fields' => 'adset_id',
+            'limit' => 150,
             'summary' => '1',
             'filtering' => "[{'field':'impressions','operator':'GREATER_THAN','value':0}]"
         );
@@ -97,7 +99,19 @@ class FacebookAdsExporter
             $params
         );
 
-        $response = $this->fb->getClient()->sendRequest($request);
+        $attempts = 0;
+        do {
+            try{
+                $response = $this->fb->getClient()->sendRequest($request);
+                break;
+            } catch (Exception $e){
+                $attempts++;
+                print("Attempts: " . $attempts . PHP_EOL);
+                var_dump($e);
+                sleep(5);
+            }
+        } while ($attempts < self::MAX_ATTEMPTS);
+
         $adList = $response->getDecodedBody();
         return $adList;
     }
