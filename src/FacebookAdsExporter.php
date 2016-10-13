@@ -17,7 +17,7 @@ class FacebookAdsExporter
 
     public function __construct()
     {
-        $dotenv = new Dotenv\Dotenv(dirname(__DIR__));
+        $dotenv = new Dotenv\Dotenv(dirname('.'));
         $dotenv->load();
         $this->setConfigParams();
 
@@ -51,6 +51,22 @@ class FacebookAdsExporter
 
     public function setAccountId($accountId){
         $this->accountId = $accountId;
+    }
+
+    public function getAppId(){
+        return $this->appId;
+    }
+
+    public function getAppSecret(){
+        return $this->appSecret;
+    }
+
+    public function getAppAccessToken(){
+        return $this->appAccessToken;
+    }
+
+    public function getAccountId(){
+        return $this->accountId;
     }
 
 
