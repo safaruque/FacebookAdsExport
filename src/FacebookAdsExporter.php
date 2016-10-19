@@ -16,6 +16,7 @@ class FacebookAdsExporter
     protected $appAccessToken;
     protected $accountId;
     const MAX_ATTEMPTS = 5;
+    const LIMIT = 25;
 
     public function __construct()
     {
@@ -77,7 +78,7 @@ class FacebookAdsExporter
 
         $params = array(
             'fields' => 'adset_id',
-            'limit' => 150,
+            'limit' => self::LIMIT,
             'summary' => '1',
             'filtering' => "[{'field':'impressions','operator':'GREATER_THAN','value':0}]"
         );
@@ -99,21 +100,28 @@ class FacebookAdsExporter
             $params
         );
 
-        $attempts = 0;
+        $adListAll = [
+            'data' => []
+        ];
         do {
-            try{
-                $response = $this->fb->getClient()->sendRequest($request);
-                break;
-            } catch (Exception $e){
-                $attempts++;
-                print("Attempts: " . $attempts . PHP_EOL);
-                var_dump($e);
-                sleep(5);
-            }
-        } while ($attempts < self::MAX_ATTEMPTS);
+            $request = new FacebookRequest(
+                $this->fbApp,
+                $this->appAccessToken,
+                'GET',
+                '/' . $this->accountId . '/ads',
+                $params
+            );
+            $response = $this->fb->getClient()->sendRequest($request);
+            $adList = $response->getDecodedBody();
 
-        $adList = $response->getDecodedBody();
-        return $adList;
+            foreach($adList['data'] as $adInfo){
+                $adListAll['data'][] = $adInfo;
+            }
+            if(isset($adList['paging']['cursors']['after'])){
+                $params['after'] = $adList['paging']['cursors']['after'];
+            }
+        } while(isset($adList['paging']['cursors']['after']));
+        return $adListAll;
     }
 
     public function getAdInsights($adList, $date){
@@ -133,8 +141,6 @@ class FacebookAdsExporter
             $i++;
             $adId = $adInfo['id'];
             sleep(2);
-
-
 
             if(isset($date) && !empty($date)){
                 $adParams['time_range'] = array(
