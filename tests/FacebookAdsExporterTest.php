@@ -3,21 +3,38 @@ namespace FacebookAdsExporter\Tests;
 
 use FacebookAdsExporter\FacebookAdsExporter;
 
-class FacebookAdsExportTest extends \PHPUnit_Framework_TestCase {
+class FacebookAdsExporterTest extends \PHPUnit_Framework_TestCase
+{
 
-    /**
-     * @requires extension mysqli
-     */
-    public function testGetActiveAds($date="2016-09-18"){
-        $fae = FacebookAdsExporter::create();
-        $activeAds = $fae->getActiveAds($date);
-        $this->assertTrue(is_array($activeAds) && !empty($activeAds));
+    private $app;
+
+    protected function setUp()
+    {
+        $this->app = FacebookAdsExporter::create();
     }
 
-    public function testGetAdInsights($date="2016-09-18"){
-        $fae = FacebookAdsExporter::create();
-        $activeAds = $fae->getActiveAds($date);
-        $adInsights = $fae->getAdInsights($activeAds, $date);
-        $this->assertTrue(is_array($adInsights) && !empty($adInsights));
+    /**
+     *
+     */
+    public function testCreate()
+    {
+        $this->assertInstanceOf('FacebookAdsExporter\FacebookAdsExporter', $this->app);
+    }
+
+    public function testFbApp()
+    {
+        $this->assertInstanceOf('Facebook\FacebookApp', $this->app->fbApp);
+    }
+
+    public function testExport(){
+        $data = array(
+            array('campaign_name_1', 'adset_id_1'),
+            array('campaign_name_1', 'adset_id_2')
+        );
+        $path = "example.csv";
+        $this->app->export($data, $path);
+        $dataFromCSV = file_get_contents($path);
+        $this->assertEquals(preg_match('/campaign_name_1/', $dataFromCSV), 1);
+
     }
 }

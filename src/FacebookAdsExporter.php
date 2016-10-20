@@ -72,7 +72,6 @@ class FacebookAdsExporter
         return $this->accountId;
     }
 
-
     public function getActiveAds($date){
         $adList = array();
 
@@ -91,14 +90,6 @@ class FacebookAdsExporter
         } else {
             $params['date_preset'] = 'yesterday';
         }
-
-        $request = new FacebookRequest(
-            $this->fbApp,
-            $this->appAccessToken,
-            'GET',
-            '/' . $this->accountId . '/ads',
-            $params
-        );
 
         $adListAll = [
             'data' => []
